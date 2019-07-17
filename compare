@@ -1,0 +1,38 @@
+双决策模型+多决策向量过滤模型
+{'recall_score_pos': 0.8589225589225589,
+'precision_score_neg': 0.954683697771505,
+'precision_score_pos': 0.9250816249679227,
+ 'f1_pos': 0.8906831493443981,
+ 'recall_score_neg': 0.9770764119601327,
+ 'f1_neg': 0.9657414258967917}
+
+{'precision_score_pos': 0.932474201116986,
+'f1_pos': 0.8964138309278058,
+'precision_score_neg': 0.9543220416146241,
+'recall_score_pos': 0.8644012944983819,
+'f1_neg': 0.9659402059357174,
+'recall_score_neg': 0.9780022446689113}
+
+ 随机森林
+{'recall_score_pos': 0.8458339925738448,
+'f1_pos': 0.8636727877402695,
+'f1_neg': 0.9552157637533899,
+'precision_score_neg': 0.9486015069241738,
+'recall_score_neg': 0.9620215958354326,
+'precision_score_pos': 0.8831822306087659}
+
+svm
+{'f1_pos': 0.8492852670426732,
+'f1_neg': 0.953007589130293,
+'recall_score_pos': 0.815488340088377,
+'precision_score_neg': 0.9407014856551813,
+'precision_score_pos': 0.8874081994705533,
+'recall_score_neg': 0.9657811518453329}
+
+逻辑回归
+{'precision_score_pos': 0.8707627388802258,
+'precision_score_neg': 0.8808571985053314,
+'f1_neg': 0.9231420619181515,
+'recall_score_neg': 0.9698475679831382,
+'recall_score_pos': 0.6072638352942621,
+'f1_pos': 0.7146169811457096}

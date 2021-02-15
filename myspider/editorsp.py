@@ -45,7 +45,7 @@ def get_uid_list(lemmaId,page):
     #uid_list=editor_soup.select('a.uname')
     #编辑者总数
     editor_total_num=len(editor_json)
-    print("共有"+str(editor_total_num)+"个编辑者")
+    #print("共有"+str(editor_total_num)+"个编辑者")
     # 编辑者属性(总值)
     editor_goodVersionCount = 0
     editor_commitPassedCount = 0

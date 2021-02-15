@@ -13,7 +13,7 @@ class Runner():
                 'Connection': 'keep-alive'
             }
         #初始化存储类
-        self.saver=Saver()
+        # self.saver=Saver()
     def _run_one_page(self,page_id):
         #获得页面的url地址
         url = SpiderConfig.base_url + str(page_id) + ".htm"

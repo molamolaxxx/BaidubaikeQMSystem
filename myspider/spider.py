@@ -49,13 +49,14 @@ def get_lemmaPv_id(java_script):
 
 def get_lemmaId(java_script):
     for txt in java_script:
-        index=txt.text.find('rightCheck.editView')
+        text = str(txt.string)
+        index = text.find('rightCheck.editView')
         if(index!=-1):
-            txt_sub=txt.text[index+15:index+30]
+            txt_sub=str(txt.string)[index+15:index+30]
             lemma_id=re.sub("\D", "", txt_sub)
-        index2 = txt.text.find('newLemmaIdEnc')
+        index2 = text.find('newLemmaIdEnc')
         if (index2 != -1):
-            txt_sub = txt.text[index2:index2 + 60]
+            txt_sub = text[index2:index2 + 60]
             pv_id= get_deep_txt(txt_sub)
     return lemma_id,pv_id
 
@@ -208,7 +209,7 @@ def get_one_page(url,id):
         pv_json=_response2.read()
         pv_json = BeautifulSoup(pv_json, "html.parser").text
         pv_json_obj = json.loads(pv_json)
-    except:
+    except Exception as e:
         print("获取用户数据失败")
         baidu_item.click=0
         baidu_item.share=0

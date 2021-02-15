@@ -1,3 +1,6 @@
+import sys
+sys.path.append("../model")
+
 from sklearn import tree
 from model.datautils import  to_array,to_df,data_preprocess,get_train_and_test_data,\
     cal_result,add_eva_data,get_average,get_max,split_data_label,get_full_train_data,split_data_average,get_topN_column,split_textEditor_data
@@ -127,8 +130,8 @@ class DoubleDecideModel:
         assert len(text_model_result) == len(editor_model_result)
 
         final_result = []
-        # score_tuple_list = []
-        # score_dict = {}
+        score_tuple_list = []
+        score_dict = {}
         for idx in range(len(text_model_result)):
             if  text_model_result[idx] and editor_model_result[idx]:
                 final_result.append(1)
@@ -153,8 +156,8 @@ class DoubleDecideModel:
 
         '''根据百分比得出阈值，筛选重新打分'''
 
-        thresh = score_tuple_list_sort[int(len(score_tuple_list_sort)/2)][0]
-        print("筛选百分比为：{} , thresh为{}".format(1 / 2,thresh))
+        thresh = score_tuple_list_sort[int(len(score_tuple_list_sort)*0.18)][0]
+        print("筛选百分比为：{} , thresh为{}".format(0.18,thresh))
 
         for idx,r in enumerate(final_result):
             if r == 2:

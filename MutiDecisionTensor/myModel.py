@@ -1,5 +1,5 @@
 import sys
-sys.path.append("/home/molamola/PycharmProjects/baidubaikeQMSystem/")
+sys.path.append("../")
 
 from myConfig import Config
 from model.datautils import data_preprocess,get_full_train_data
@@ -32,9 +32,9 @@ class MultiplyDecisionTensor:
 
     def _build_model(self):
         '''初始化模型'''
-        #self.trainer = RandomForestClassifier(n_estimators=120)
+        self.trainer = RandomForestClassifier(n_estimators=120)
 
-        self.trainer = tree.DecisionTreeClassifier()
+        # self.trainer = tree.DecisionTreeClassifier()
 
     def _get_MultiplyDecisionTensor(self):
         '''获得多决策向量,每个数据项训练N次获取f1评估值最高的'''

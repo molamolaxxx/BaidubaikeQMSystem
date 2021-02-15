@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score ,confusion_matrix
 from sklearn.preprocessing import minmax_scale ,maxabs_scale ,scale
+import matplotlib.font_manager as font_manager
 import matplotlib.pyplot as plt
 from myConfig import Config
 
@@ -27,7 +28,7 @@ def predict_use_total(data):
             result.append(0)
     return result
 
-def predict_use_Weighting(data,y,p,get_detail = False):
+def predict_use_Weighting(data,y,p,get_detail = False,raw_score = -1,weighted=True):
 
     # sort_list = [21, 8, 19, 12, 9, 4, 1, 13, 18, 15, 7, 2, 22, 17, 10, 16, 3, 5, 20, 14, 11, 6]
     # sort_list = [17, 5, 16, 20, 19, 11, 1, 9, 15, 10, 7, 21, 22, 14, 8, 13, 2, 3, 18, 12, 6, 4]
@@ -39,13 +40,17 @@ def predict_use_Weighting(data,y,p,get_detail = False):
     weight_list = [0 for i in range(22)]
     for index in range(22):
         #todo 计算weight-list 投票模型　weight = predict^2 + recall^2
-        weight_list[index] = pow(predict_list[index],2) + pow(recall_list[index],2)
+        # weight_list[index] = (pow(predict_list[index],2) + pow(recall_list[index],2) )* entropy_list[index]
 
         # todo 计算weight-list 熵模型　
-        #weight_list[index] = entropy_list[index]
+        if weighted:
+            weight_list[index] = entropy_list[index]
+        else:
+            weight_list[index] = 0.1
 
     #对权重进行自动化确定
-    weight_list = minmax_scale(weight_list)
+    if weighted:
+        weight_list = minmax_scale(weight_list)
 
     weight_tuple_list = []
     result = []
@@ -76,25 +81,38 @@ def predict_use_Weighting(data,y,p,get_detail = False):
         if weight < min_weight:
             min_weight = weight
 
-        #定义阈值 , 取整
-        threshold = weight_tuple_list[int(len(weight_tuple_list)*p)][0]
 
+        #定义阈值 , 取整
+        # threshold = weight_tuple_list[int(len(weight_tuple_list)*p)][0]
+        threshold = p
         if weight > threshold:
             result[tuple[1]] = 1
         else:
             result[tuple[1]] = 0
 
+
     print("筛选率：{}".format(p))
     print("阈值:{}".format(threshold))
-    print("max_weight:{}".format(max_weight))
-    print("min_weight:{}".format(min_weight))
+    print("max_score:{}".format(max_weight))
+    print("min_score:{}".format(min_weight))
 
     if get_detail:
+        idx = len(weight_tuple_list)
+        if raw_score != -1:
+            for _idx, tuple in enumerate(weight_tuple_list):
+                if raw_score > tuple[0]:
+                    idx = _idx
+                    break
+
+
         high = weight_tuple_list[int(len(weight_tuple_list)*0.1)][0]
         good = weight_tuple_list[int(len(weight_tuple_list) * 0.2)][0]
         mid = weight_tuple_list[int(len(weight_tuple_list) * 0.6)][0]
         low = weight_tuple_list[int(len(weight_tuple_list) * 0.8)][0]
-        return high,good,mid,low
+        # 百分比词条得分
+        percent_score = (len(weight_tuple_list) - idx )/ len(weight_tuple_list)
+        return high,good,mid,low,percent_score*100
+
 
 
     for idx,tuple in enumerate(weight_tuple_list):
@@ -107,15 +125,33 @@ def predict_use_Weighting(data,y,p,get_detail = False):
 
     return result , result_dict
 
+'''统计各排名点前后数目'''
+def statics(list, forward = True, points= [300,600,900,1500,2100,2700]):
+    result_arr = np.zeros(len(points))
+    if forward:
+        point_idx = 0
+    else:
+        type = len(points) - 1
+    for data in list:
+        if point_idx >= len(points) : break
+        if data <= points[point_idx]:
+            result_arr[point_idx] += 1
+        else:
+            point_idx+=1
+    for i in range(1, len(result_arr)):
+        result_arr[i] += result_arr[i-1]
+    print(str(result_arr))
+
 
 if __name__ == '__main__':
+    songTi = font_manager.FontProperties(fname='/usr/local/share/fonts/s/simhei.ttf')
     conf = Config()
     p_list = []
     r_list = []
     f1_list = []
 
 
-    p = 0.20
+    p = 0.28
 
     '''通过决策向量预测'''
     pd_data = pd.read_csv(conf.tensor_save_path+"MDT.csv")
@@ -125,6 +161,9 @@ if __name__ == '__main__':
     Y_data = data[:,-1]
 
     result,result_dict = predict_use_Weighting(X_data,Y_data,p)
+
+    #混淆矩阵
+    matrix = confusion_matrix(y_pred=result, y_true=Y_data)
 
     acc = accuracy_score(y_pred=result,y_true=Y_data)
     p_1 = precision_score(y_pred=result,y_true=Y_data,pos_label=1)
@@ -140,8 +179,8 @@ if __name__ == '__main__':
     print("\n")
     print("precise_neg:{}".format(p_0))
     print("recall_neg:{}".format(r_0))
-    print("F1-Score_pos:{}".format(f1_0))
-
+    print("F1-Score_neg:{}".format(f1_0))
+    #
     p_list.append(p_1)
     r_list.append(r_1)
     f1_list.append(f1_1)
@@ -149,16 +188,16 @@ if __name__ == '__main__':
     # 建立对象
     fig = plt.figure(figsize=(14, 10))
     ax = fig.add_subplot(111)
-    ax.set_title('BaiduBaike items\' score quality ranking')
-    plt.xlabel("items")
-    plt.ylabel("score")
+    # ax.set_title('BaiduBaike items\' score quality ranking')
+    plt.xlabel("词条索引", fontproperties=songTi,fontsize=26)
+    plt.ylabel("词条评分", fontproperties=songTi,fontsize=26)
 
 
     blue_x = []
     blue_y = []
     red_x = []
     red_y = []
-    for dict in result_dict:
+    for id, dict in enumerate(result_dict):
         if dict['level'] == 1:
             blue_x.append(dict['idx'])
             blue_y.append(dict['score'])
@@ -166,9 +205,15 @@ if __name__ == '__main__':
             red_x.append(dict['idx'])
             red_y.append(dict['score'])
 
-    plt.bar(blue_x, blue_y, color='black',label='positive')
-    plt.bar(red_x,red_y,color='red',label='negative')
-    plt.xticks(range(0,len(result_dict)+1,200))
 
-    plt.legend()
+    red_x = red_x[5:-1]
+    red_y = red_y[5:-1]
+    statics(blue_x)
+    statics(red_x)
+    # plt.bar(red_x,red_y,color='black',width = 1)
+    plt.xticks(range(0, len(result_dict) + 1, 300))
+    plt.tick_params(labelsize=22)
+    plt.bar(blue_x, blue_y, color='black')
+
+    # plt.legend()
     plt.show()

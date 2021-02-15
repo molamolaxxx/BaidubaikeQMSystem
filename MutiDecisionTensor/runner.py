@@ -1,5 +1,5 @@
 import sys
-sys.path.append("/home/molamola/PycharmProjects/baidubaikeQMSystem/")
+sys.path.append("../")
 
 from MutiDecisionTensor.myModel import MultiplyDecisionTensor
 import pickle
@@ -72,9 +72,13 @@ class Runner:
 if __name__ == '__main__':
 
     #获得词条
-    url = sys.argv[1]
+    if len(sys.argv) is 0:
+        url = "https://baike.baidu.com/item/%E7%99%BE%E5%BA%A6%E7%99%BE%E7%A7%91/85895?fr=aladdin"
+    else:
+        url = sys.argv[1]
+
     if url is None:
-        print("请输入评价词条网址")
+        print("未输入评价词条网址")
 
     spRunner = SpRunner()
     item = spRunner.get_one_page_data(url)
@@ -90,7 +94,7 @@ if __name__ == '__main__':
     r = Runner()
     result = r.predict_one_item(return_scaled_data(input_data)[0:21])
 
-    print("词条最终质量评分为{}".format(result))
+    print("词条模型质量评分为{}".format(result))
 
     pd_data = pd.read_csv(r.config.tensor_save_path + "MDT.csv")
     data = np.array(pd_data.values)[:, 1:].astype(int)
@@ -98,8 +102,9 @@ if __name__ == '__main__':
     X_data = data[:, :-1]
     Y_data = data[:, -1]
 
-    high, good, mid, low = predict_use_Weighting(X_data, Y_data, 0.2,get_detail=True)
+    high, good, mid, low ,percent_score= predict_use_Weighting(X_data, Y_data, 0.2,get_detail=True, raw_score=result)
 
+    print("词条统计质量评分为{}".format(percent_score))
     if result >= high:
         print("词条质量为优秀,建议评为优质词条")
     elif result < high and result >= good:
